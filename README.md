@@ -1,8 +1,8 @@
 # carPricePredictor
 
-conda create -n youtube python=3.11 -y
+conda create -n car python=3.13 -y
 
-conda activate youtube
+conda activate car
 
 pip install -r requirements.txt
 
