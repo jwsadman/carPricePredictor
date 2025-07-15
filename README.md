@@ -1,8 +1,8 @@
 # carPricePredictor
 
-conda create -n car python=3.13 -y
+conda create -n price python=3.11
 
-conda activate car
+conda activate price
 
 pip install -r requirements.txt
 
