@@ -16,3 +16,24 @@ stages:
       md5: 80a55f0381d5e1f971d52ae1bbe2b033.dir
       size: 89881195
       nfiles: 2
+  data_preprocessing:
+    cmd: python src/data/data_preprocessing.py
+    deps:
+    - path: data/raw/test.csv
+      hash: md5
+      md5: 9e83691d062d2e32886c13c8622269f8
+      size: 17977941
+    - path: data/raw/train.csv
+      hash: md5
+      md5: fdb42a4ba0dba84930aed2c76edc347e
+      size: 71903254
+    - path: src/data/data_preprocessing.py
+      hash: md5
+      md5: d785a89ca4b0cbd9637f70ded4c9f467
+      size: 4459
+    outs:
+    - path: data/interim
+      hash: md5
+      md5: 5930b00000425aa882392d4391501ca2.dir
+      size: 24169431
+      nfiles: 2
