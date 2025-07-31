@@ -206,3 +206,4 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 /xgb_model.pkl
+/experiment_info.json
