@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Used Car Price Predictor</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>🚗 Used Car Price Predictor</h2>
+        <form method="post" action="/predict">
+            <label>Enter the Car Brand (make)</label>
+            <input type="text" name="make" required>
+
+            <label>Enter the Car Model</label>
+            <input type="text" name="model" required>
+
+            <label>Enter the Car Body Type</label>
+            <input type="text" name="body" required>
+
+            <label>Condition of the Car (1 to 5)</label>
+            <input type="text" name="condition" required>
+
+            <label>Total Mileage driven by the Car</label>
+            <input type="number" step="any" name="odometer" required>
+
+            <label>Year the Car was bought</label>
+            <input type="number" name="saleyear" required>
+
+            <button type="submit">Predict Price</button>
+        </form>
+
+        {% if result %}
+        <div class="alert">{{ result }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>

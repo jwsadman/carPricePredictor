@@ -58,6 +58,18 @@ def load_model(model_path: str):
         raise
 
 
+def load_encoders(encoder_path: str) -> dict:
+    """Load all saved LabelEncoders as a dictionary."""
+    try:
+        with open(encoder_path, 'rb') as file:
+            encoders = pickle.load(file)
+        logger.debug('LabelEncoders loaded from %s', encoder_path)
+        return encoders
+    except Exception as e:
+        logger.error('Error loading encoders from %s: %s', encoder_path, e)
+        raise
+
+
 def load_params(params_path: str) -> dict:
     """Load parameters from a YAML file."""
     try:
@@ -70,29 +82,25 @@ def load_params(params_path: str) -> dict:
         raise
 
 
-def encode_features_and_split(data: pd.DataFrame, target_column: str = 'sellingprice'):
-    """
-    Encodes high-cardinality categorical columns and splits features and target.
+def prepare_data(data: pd.DataFrame, encoders: dict, target_column: str = 'sellingprice'):
+    high_cardinality_columns = ['make', 'model', 'body']
 
-    Parameters:
-    - data (pd.DataFrame): The input dataframe with categorical features.
-    - target_column (str): The name of the target column.
-
-    Returns:
-    - X (pd.DataFrame): Feature matrix.
-    - y (pd.Series): Target vector.
-    """
-    le = LabelEncoder()
-    high_cardinality_columns = ['make', 'model', 'body']  
-    
     for col in high_cardinality_columns:
-        if col in data.columns:
-            data[col] = le.fit_transform(data[col].fillna('Unknown'))
+        if col in data.columns and col in encoders:
+            le = encoders[col]
+            data[col] = data[col].apply(lambda x: x if x in le.classes_ else 'Unknown')
+            if 'Unknown' not in le.classes_:
+                le.classes_ = np.append(le.classes_, 'Unknown')  # Add 'Unknown' to classes if missing
+            data[col] = le.transform(data[col])
+        else:
+            raise ValueError(f"Missing encoder for column: {col}")
 
     X_test = data.drop(columns=[target_column])  
     y_test = data[target_column]
     
     return X_test, y_test
+
+
 
 
 def evaluate_model(model, X_test: np.ndarray, y_test: np.ndarray):
@@ -150,14 +158,15 @@ def main():
             for key, value in params.items():
                 mlflow.log_param(key, value)
             
-            # Load model
+            # Load model and Encoder
             model = load_model(os.path.join(root_dir, 'xgb_model.pkl'))
+            encoders = load_encoders(os.path.join(root_dir, 'label_encoders.pkl'))
 
             # Load test data for signature inference
             test_data = load_data(os.path.join(root_dir, 'data/interim/test_processed.csv'))
 
             # Prepare test data
-            X_test, y_test = encode_features_and_split(test_data)
+            X_test, y_test = prepare_data(test_data, encoders)
 
             # Create a DataFrame for signature inference (using first few rows as an example)
             input_example = pd.DataFrame(X_test[:5])  # <--- Added for signature
@@ -177,6 +186,9 @@ def main():
             # artifact_uri = mlflow.get_artifact_uri()
             model_path = "xgb_model"
             save_model_info(run.info.run_id, model_path, 'experiment_info.json')
+
+            # Log the encoder as an artifact
+            mlflow.log_artifact(os.path.join(root_dir, 'label_encoders.pkl'))
 
             # Evaluate model and get regression metrics
             metrics = evaluate_model(model, X_test, y_test)

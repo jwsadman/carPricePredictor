@@ -58,29 +58,34 @@ def load_data(file_path: str) -> pd.DataFrame:
         raise
 
 
-def encode_features_and_split(data: pd.DataFrame, target_column: str = 'sellingprice'):
-    """
-    Encodes high-cardinality categorical columns and splits features and target.
+def encode_features_and_split(data: pd.DataFrame, target_column: str = 'sellingprice') -> tuple:
+    """Encode high-cardinality categorical columns and split into X and y."""
+    try:
+        high_cardinality_columns = ['make', 'model', 'body']
+        encoders = {}
 
-    Parameters:
-    - data (pd.DataFrame): The input dataframe with categorical features.
-    - target_column (str): The name of the target column.
+        # Apply LabelEncoder for each high-cardinality column
+        for col in high_cardinality_columns:
+            if col in data.columns:
+                le = LabelEncoder()
+                data[col] = le.fit_transform(data[col].fillna('Unknown'))
+                encoders[col] = le  # Store encoder in dict
 
-    Returns:
-    - X (pd.DataFrame): Feature matrix.
-    - y (pd.Series): Target vector.
-    """
-    le = LabelEncoder()
-    high_cardinality_columns = ['make', 'model', 'body']  
-    
-    for col in high_cardinality_columns:
-        if col in data.columns:
-            data[col] = le.fit_transform(data[col].fillna('Unknown'))
+        # Save the dictionary of encoders as a single file
+        encoder_path = os.path.join(get_root_directory(), 'label_encoders.pkl')
+        with open(encoder_path, 'wb') as f:
+            pickle.dump(encoders, f)
 
-    X_train = data.drop(columns=[target_column])  
-    y_train = data[target_column]
-    
-    return X_train, y_train
+        logger.debug(f"All encoders saved to {encoder_path}")
+
+        X_train = data.drop(columns=[target_column])
+        y_train = data[target_column]
+
+        return X_train, y_train
+
+    except Exception as e:
+        logger.error("Error during encoding and splitting: %s", e)
+        raise
 
 
 def train_xgb(X_train: np.ndarray, y_train: np.ndarray, learning_rate: float, max_depth: int, n_estimators: int) -> xgb.XGBRegressor:
