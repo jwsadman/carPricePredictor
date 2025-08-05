@@ -10,5 +10,5 @@ COPY . /app
 #run
 RUN pip install -r requirements.txt
 
-# commands
-CMD ["python3", "app.py"]
+# Run FastAPI with Uvicorn on port 8080
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
