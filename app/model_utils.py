@@ -1,5 +1,6 @@
 # app/model_utils.py
 import mlflow.pyfunc
+from pathlib import Path
 import pandas as pd
 import os
 import pickle
@@ -19,9 +20,9 @@ logger = logging.getLogger(__name__)
 S3_MODEL_URI = "s3://mlflow-bucket-41/634763848739188950/035167a54d6641cdb3508809e97baf70/artifacts/xgb_model/"
 
 
-def get_root_directory() -> str:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    root_dir = os.path.abspath(os.path.join(current_dir, '../../'))
+def get_root_directory() -> Path:
+    current_dir = Path(__file__).resolve().parent  # /app/app
+    root_dir = current_dir.parent  # one level up → /app
     return root_dir
 
 # def load_model():
@@ -39,23 +40,22 @@ def load_model():
         logger.error(f"Failed to load XGBoost model from S3: {e}")
         raise
 
-
 def load_label_encoders() -> dict:
-    """Load saved label encoders dictionary from pickle."""
     root_dir = get_root_directory()
-    encoder_path = os.path.join(root_dir, 'label_encoders.pkl')
+    encoder_path = root_dir / 'label_encoders.pkl'
 
-    if not os.path.exists(encoder_path):
+    if not encoder_path.exists():
         raise FileNotFoundError(f"Label encoder file not found at {encoder_path}")
-    
+
     try:
-        with open(encoder_path, 'rb') as f:
+        with encoder_path.open('rb') as f:
             encoders = pickle.load(f)
         logger.debug("LabelEncoders loaded from %s", encoder_path)
         return encoders
     except Exception as e:
         logger.error("Failed to load label encoders: %s", e)
         raise
+
 
 
 
