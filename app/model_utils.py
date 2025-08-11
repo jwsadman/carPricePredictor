@@ -9,11 +9,14 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 # Set these appropriately
-MLFLOW_TRACKING_URI = "http://ec2-13-220-203-71.compute-1.amazonaws.com:5000/"
-MODEL_NAME = "price_predictor_model"
-MODEL_STAGE = "Staging"
+# MLFLOW_TRACKING_URI = "http://ec2-13-220-203-71.compute-1.amazonaws.com:5000/"
+# MODEL_NAME = "price_predictor_model"
+# MODEL_STAGE = "Staging"
 
-mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+# mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+
+# S3 URI for the XGBoost model
+S3_MODEL_URI = "s3://mlflow-bucket-41/634763848739188950/035167a54d6641cdb3508809e97baf70/artifacts/xgb_model/"
 
 
 def get_root_directory() -> str:
@@ -21,10 +24,20 @@ def get_root_directory() -> str:
     root_dir = os.path.abspath(os.path.join(current_dir, '../../'))
     return root_dir
 
+# def load_model():
+#     """Load the MLflow model from the specified stage."""
+#     model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
+#     return mlflow.pyfunc.load_model(model_uri)
+
+
 def load_model():
-    """Load the MLflow model from the specified stage."""
-    model_uri = f"models:/{MODEL_NAME}/{MODEL_STAGE}"
-    return mlflow.pyfunc.load_model(model_uri)
+    """Load the XGBoost model directly from S3."""
+    try:
+        logger.info(f"Loading XGBoost model from S3: {S3_MODEL_URI}")
+        return mlflow.pyfunc.load_model(S3_MODEL_URI)
+    except Exception as e:
+        logger.error(f"Failed to load XGBoost model from S3: {e}")
+        raise
 
 
 def load_label_encoders() -> dict:

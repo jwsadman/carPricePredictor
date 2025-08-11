@@ -8,6 +8,7 @@ WORKDIR /app
 COPY . /app
 
 #run
+RUN pip install python-multipart
 RUN pip install -r requirements.txt
 
 # Run FastAPI with Uvicorn on port 8080
