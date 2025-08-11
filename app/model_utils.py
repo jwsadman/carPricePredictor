@@ -43,7 +43,7 @@ def load_model():
 def load_label_encoders() -> dict:
     """Load saved label encoders dictionary from pickle."""
     root_dir = get_root_directory()
-    encoder_path = os.path.join(root_dir, 'carPricePredictor', 'label_encoders.pkl')
+    encoder_path = os.path.join(root_dir, 'label_encoders.pkl')
 
     if not os.path.exists(encoder_path):
         raise FileNotFoundError(f"Label encoder file not found at {encoder_path}")

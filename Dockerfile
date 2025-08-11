@@ -7,6 +7,7 @@ WORKDIR /app
 #copy
 COPY . /app
 
+
 #run
 RUN pip install python-multipart
 RUN pip install -r requirements.txt
