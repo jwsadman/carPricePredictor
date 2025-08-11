@@ -88,5 +88,19 @@ def preprocess_input(data: dict) -> pd.DataFrame:
     # Load and apply label encoders
     encoders = load_label_encoders()
     df = encode_features(df, encoders)
+
+    # Cast columns to expected dtypes
+    dtype_map = {
+        'make': 'int32',
+        'model': 'int32',
+        'body': 'int32',
+        'condition': 'float64',
+        'odometer': 'float64',
+        'saleyear': 'int64'
+    }
+    
+    for col, dtype in dtype_map.items():
+        if col in df.columns:
+            df[col] = df[col].astype(dtype)
     
     return df
